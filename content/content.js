@@ -24,7 +24,7 @@ const OVERLAY_CSS = `
 #wa-crm-fab { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background-color: #25D366; color: white; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; font-size: 24px; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.2s, background-color 0.2s; pointer-events: auto; }
 #wa-crm-fab:hover { transform: scale(1.05); background-color: #128C7E; }
 /* Menú principal */
-#wa-crm-menu { position: fixed; bottom: 150px; right: 24px; width: 320px; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; transition: opacity 0.3s, transform 0.3s; transform-origin: bottom right; z-index: 999; pointer-events: auto; }
+#wa-crm-menu { position: fixed; bottom: 150px; right: 24px; width: 320px; max-height: calc(100vh - 180px); background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; transition: opacity 0.3s, transform 0.3s; transform-origin: bottom right; z-index: 999; pointer-events: auto; }
 .menu-hidden { opacity: 0; transform: scale(0.8); pointer-events: none !important; }
 .menu-visible { opacity: 1; transform: scale(1); }
 /* Header del menú */
@@ -111,19 +111,19 @@ async function updateDynamicStyles() {
         const escapedName = cleanName.replace(/"/g, '\\"');
         
         let color = '';
-        if (data.type === 'cita') color = 'rgba(255, 193, 7, 0.4)'; // Amarillo más fuerte
-        if (data.type === 'factura') color = 'rgba(33, 150, 243, 0.4)'; // Azul
-        if (data.type === 'envio') color = 'rgba(76, 175, 80, 0.5)'; // Verde Intenso
+        if (data.type === 'cita') color = 'rgba(255, 193, 7, 0.2)'; // Amarillo
+        if (data.type === 'factura') color = 'rgba(33, 150, 243, 0.2)'; // Azul
+        if (data.type === 'envio') color = 'rgba(76, 175, 80, 0.2)'; // Verde Intenso
 
-        // Usamos un seudoelemento ::after con pointer-events: none
-        // para dibujar el color por ENCIMA sin afectar hover, clicks ni el tamaño de la caja (box-model).
+        // Usamos un seudoelemento ::after con pointer-events: none apuntando al div interno
+        // para evitar que se dibuje sobre el padding externo (espacio negro).
         cssRules += `
-            div[role="row"]:has([title*="${escapedName}"]),
-            div[role="listitem"]:has([title*="${escapedName}"]) {
+            div[role="row"]:has([title*="${escapedName}"]) > div,
+            div[role="listitem"]:has([title*="${escapedName}"]) > div {
                 position: relative !important;
             }
-            div[role="row"]:has([title*="${escapedName}"])::after,
-            div[role="listitem"]:has([title*="${escapedName}"])::after {
+            div[role="row"]:has([title*="${escapedName}"]) > div::after,
+            div[role="listitem"]:has([title*="${escapedName}"]) > div::after {
                 content: '';
                 position: absolute;
                 top: 0;
@@ -131,9 +131,10 @@ async function updateDynamicStyles() {
                 right: 0;
                 bottom: 0;
                 background-color: ${color} !important;
-                box-shadow: inset 6px 0 0 0 ${color.replace('0.4', '1').replace('0.5', '1')} !important;
+                box-shadow: inset 6px 0 0 0 ${color.replace('0.2', '1')} !important;
                 pointer-events: none !important;
                 z-index: 10;
+                border-radius: inherit;
             }
         `;
         
