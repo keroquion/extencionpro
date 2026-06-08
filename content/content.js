@@ -67,6 +67,14 @@ async function init() {
 
   window.addEventListener('message', handleBridgeMessage);
   chrome.storage.onChanged.addListener(handleStorageChange);
+
+  // Escuchar mensajes desde el Service Worker o Dashboard
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.action === 'OPEN_CHAT_IN_WA' && request.phone) {
+          window.postMessage({ source: 'wa-crm-content', action: 'OPEN_CHAT', phone: request.phone }, '*');
+          sendResponse({ success: true });
+      }
+  });
   
   // Custom event listeners from modules
   window.addEventListener('WA_CRM_SAVE_APPOINTMENT', handleSaveAppointment);
@@ -107,12 +115,16 @@ async function updateDynamicStyles() {
         if (data.type === 'factura') color = 'rgba(33, 150, 243, 0.4)'; // Azul
         if (data.type === 'envio') color = 'rgba(76, 175, 80, 0.5)'; // Verde Intenso
 
-        // WhatsApp a veces usa role="row" o role="listitem" para las filas de chat
+        // WhatsApp usa un div interno para el color de fondo gris/hover.
+        // Aplicamos el color al contenedor interior para que siempre sea visible.
         cssRules += `
             div[role="row"]:has([title*="${escapedName}"]),
             div[role="listitem"]:has([title*="${escapedName}"]) {
-                background-color: ${color} !important;
                 border-left: 6px solid ${color.replace('0.4', '1').replace('0.5', '1')} !important;
+            }
+            div[role="row"]:has([title*="${escapedName}"]) > div,
+            div[role="listitem"]:has([title*="${escapedName}"]) > div {
+                background-color: ${color} !important;
             }
         `;
         

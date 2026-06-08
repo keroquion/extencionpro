@@ -2,6 +2,7 @@ import { ContactNotes } from './contact-notes.js';
 import { Scheduler } from './scheduler.js';
 import { Invoice } from './invoice.js';
 import { Shipping } from './shipping.js';
+import { CrmFilters } from './filters.js';
 
 export const FloatingMenu = {
   menuElement: null,
@@ -37,6 +38,7 @@ export const FloatingMenu = {
     this.menuElement.appendChild(header);
 
     // Secciones
+    this.addSection(this.menuElement, 'filtros', '🔍 Filtros CRM', CrmFilters.render);
     this.addSection(this.menuElement, 'contacto', '👤 Contacto', ContactNotes.render);
     this.addSection(this.menuElement, 'agendar', '📅 Agendar', Scheduler.render);
     this.addSection(this.menuElement, 'factura', '🧾 Factura', Invoice.render);

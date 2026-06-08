@@ -58,8 +58,23 @@
     }, 1000);
 
     window.WPP?.on?.('chat.active_chat', (chat) => {
-      console.log('[WA-CRM-BRIDGE] Evento chat.active_chat disparado', chat);
       if(chat) processChat(chat);
+    });
+
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.source === 'wa-crm-content') {
+        if (event.data.action === 'OPEN_CHAT' && event.data.phone) {
+           console.log('[WA-CRM-BRIDGE] Recibida orden de abrir chat:', event.data.phone);
+           const chatId = event.data.phone.includes('@') ? event.data.phone : `${event.data.phone}@c.us`;
+           if (window.WPP && window.WPP.chat) {
+               window.WPP.chat.openChat(chatId).then(() => {
+                  console.log('[WA-CRM-BRIDGE] Chat abierto exitosamente:', chatId);
+               }).catch(err => {
+                  console.error('[WA-CRM-BRIDGE] Error al abrir chat remoto:', err);
+               });
+           }
+        }
+      }
     });
   }
 

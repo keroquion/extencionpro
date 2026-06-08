@@ -44,7 +44,7 @@ export class CrmTab {
         this.table = new DataTable({
             container: tableContainer,
             columns: ['Contacto', 'Teléfono', 'Fecha/Hora', 'Tipo', 'Notas', 'Estado'],
-            actions: ['Eliminar'],
+            actions: ['Abrir en WA', 'Eliminar'],
             onAction: (action, item) => this.handleAction(action, item)
         });
 
@@ -78,7 +78,16 @@ export class CrmTab {
     }
 
     async handleAction(action, item) {
-        if (action === 'Eliminar') {
+        if (action === 'Abrir en WA') {
+            chrome.tabs.query({ url: "*://web.whatsapp.com/*" }, (tabs) => {
+               if (tabs.length > 0) {
+                  chrome.tabs.sendMessage(tabs[0].id, { action: 'OPEN_CHAT_IN_WA', phone: item.telefono });
+                  chrome.tabs.update(tabs[0].id, { active: true });
+               } else {
+                  alert("Por favor abre WhatsApp Web primero en otra pestaña.");
+               }
+            });
+        } else if (action === 'Eliminar') {
             if (confirm(`¿Eliminar registro de ${item.contacto}?`)) {
                 // Remove using the background script to keep it consistent
                 chrome.runtime.sendMessage({
