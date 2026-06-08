@@ -21,13 +21,13 @@
       let attempts = 0;
       const interval = setInterval(() => {
         attempts++;
-        console.error(`[WA-CRM-BRIDGE] Esperando WPP... Intento ${attempts}. WPP existe:`, !!window.WPP, 'WPP.chat existe:', !!window.WPP?.chat);
+        console.log(`[WA-CRM-BRIDGE] Esperando WPP... Intento ${attempts}. WPP existe:`, !!window.WPP, 'WPP.chat existe:', !!window.WPP?.chat);
         if (window.WPP && window.WPP.chat) {
-          console.error('[WA-CRM-BRIDGE] WPP y WPP.chat detectados! Resolviendo...');
+          console.log('[WA-CRM-BRIDGE] WPP y WPP.chat detectados! Resolviendo...');
           clearInterval(interval);
           resolve();
         } else if (attempts > 30) {
-           console.error('[WA-CRM-BRIDGE] Timeout: WPP nunca se inicializó después de 30 segundos.');
+           console.log('[WA-CRM-BRIDGE] Timeout: WPP nunca se inicializó después de 30 segundos.');
            clearInterval(interval);
         }
       }, 1000);
@@ -65,8 +65,6 @@
 
   function processChat(chat) {
     try {
-      console.log('[WA-CRM-BRIDGE] processChat ejecutado para:', chat);
-      
       const name = chat.formattedTitle || chat.name || chat.__x_formattedTitle || 'SinNombre';
       const phoneRaw = chat.historyChatId || chat.id?.user || chat.__x_id?.user || chat.id?._serialized || 'SinTelefono';
       
@@ -78,10 +76,9 @@
       };
 
       const hash = contact.phone + contact.name;
-      console.log('[WA-CRM-BRIDGE] Contacto procesado:', contact, 'Hash:', hash);
       if (hash !== lastContactHash) {
         lastContactHash = hash;
-        console.log('[WA-CRM-BRIDGE] Emitiendo CONTACT_UPDATE');
+        console.log('[WA-CRM-BRIDGE] Nuevo contacto detectado:', contact.name, contact.phone);
         emit(CONSTANTS.PREFIX + 'CONTACT_UPDATE', contact);
       }
     } catch (error) {

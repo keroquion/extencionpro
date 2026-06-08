@@ -97,23 +97,26 @@ async function updateDynamicStyles() {
     let cssRules = '';
     let currentContactType = null;
 
-    for (const [name, data] of contactStates.entries()) {
-        const escapedName = name.replace(/"/g, '\\"');
+    for (const [nameRaw, data] of contactStates.entries()) {
+        // Limpiar marcas bidi invisibles que WhatsApp suele insertar (LRM, RLM, etc.)
+        const cleanName = nameRaw.replace(/[\u200B-\u200D\uFEFF\u200E\u200F\u202A-\u202E]/g, '');
+        const escapedName = cleanName.replace(/"/g, '\\"');
+        
         let color = '';
-        if (data.type === 'cita') color = 'rgba(255, 193, 7, 0.25)'; // Amarillo
-        if (data.type === 'factura') color = 'rgba(33, 150, 243, 0.25)'; // Azul
-        if (data.type === 'envio') color = 'rgba(76, 175, 80, 0.35)'; // Verde Intenso
+        if (data.type === 'cita') color = 'rgba(255, 193, 7, 0.4)'; // Amarillo más fuerte
+        if (data.type === 'factura') color = 'rgba(33, 150, 243, 0.4)'; // Azul
+        if (data.type === 'envio') color = 'rgba(76, 175, 80, 0.5)'; // Verde Intenso
 
-        // Estilo para la lista izquierda (inyectando background en la fila)
-        // Usamos [title=...] sin tag específico porque WhatsApp a veces usa div o span
+        // WhatsApp a veces usa role="row" o role="listitem" para las filas de chat
         cssRules += `
-            div[role="listitem"]:has([title="${escapedName}"]) {
+            div[role="row"]:has([title*="${escapedName}"]),
+            div[role="listitem"]:has([title*="${escapedName}"]) {
                 background-color: ${color} !important;
-                border-radius: 8px;
+                border-left: 6px solid ${color.replace('0.4', '1').replace('0.5', '1')} !important;
             }
         `;
         
-        if (STATE.currentContact && STATE.currentContact.name === name) {
+        if (STATE.currentContact && STATE.currentContact.name === nameRaw) {
             currentContactType = data.type;
         }
     }
@@ -121,14 +124,16 @@ async function updateDynamicStyles() {
     // Sobreescribir el color del panel derecho si el contacto activo tiene estado
     if (STATE.currentContact && currentContactType) {
         let glowColor = '';
-        if (currentContactType === 'cita') glowColor = 'rgba(255, 193, 7, 0.4)';
-        if (currentContactType === 'factura') glowColor = 'rgba(33, 150, 243, 0.4)';
-        if (currentContactType === 'envio') glowColor = 'rgba(76, 175, 80, 0.5)';
+        if (currentContactType === 'cita') glowColor = 'rgba(255, 193, 7, 0.6)';
+        if (currentContactType === 'factura') glowColor = 'rgba(33, 150, 243, 0.6)';
+        if (currentContactType === 'envio') glowColor = 'rgba(76, 175, 80, 0.7)';
 
-        // Usamos div#main en lugar de #main para ganarle en especificidad al global-highlight.css
+        // Aplicamos estilos brutales para garantizar visibilidad
         cssRules += `
-            body.wa-crm-active-session div#main::after {
-                box-shadow: inset 0 0 35px 5px ${glowColor} !important;
+            body.wa-crm-active-session #main,
+            body.wa-crm-active-session [data-testid="conversation-panel-wrapper"] {
+                box-shadow: inset 0 0 80px 15px ${glowColor} !important;
+                border: 4px solid ${glowColor.replace('0.6', '1').replace('0.7', '1')} !important;
             }
         `;
     }
