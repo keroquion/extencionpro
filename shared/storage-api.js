@@ -56,6 +56,61 @@ export const StorageAPI = {
   },
 
   /**
+   * @description Actualiza un registro del CRM
+   * @param {string} tab 
+   * @param {object} updatedRecord 
+   */
+  async updateCrmRecord(tab, updatedRecord) {
+    const key = `crm_${tab}`;
+    const records = await this.getCrmRecords(tab);
+    const index = records.findIndex(r => r.id === updatedRecord.id);
+    if (index !== -1) {
+        records[index] = updatedRecord;
+        await chrome.storage.local.set({ [key]: records });
+    }
+  },
+
+  /**
+   * @description Mueve un registro a la lista de finalizados y lo elimina de pendientes
+   * @param {string} tab 
+   * @param {string} recordId 
+   */
+  async finalizeCrmRecord(tab, recordId) {
+    const key = `crm_${tab}`;
+    const finalKey = `crm_${tab}_finalizados`;
+    
+    const records = await this.getCrmRecords(tab);
+    const index = records.findIndex(r => r.id === recordId);
+    
+    if (index !== -1) {
+        const record = records[index];
+        record.estado = 'finalizado';
+        record.finalizedAt = Date.now();
+        
+        // Remove from active
+        records.splice(index, 1);
+        await chrome.storage.local.set({ [key]: records });
+        
+        // Add to finalized
+        const finalData = await chrome.storage.local.get(finalKey);
+        const finalizedRecords = finalData[finalKey] || [];
+        finalizedRecords.push(record);
+        await chrome.storage.local.set({ [finalKey]: finalizedRecords });
+    }
+  },
+
+  /**
+   * @description Obtiene registros finalizados del CRM
+   * @param {string} tab 
+   * @returns {Promise<Array>}
+   */
+  async getFinalizedCrmRecords(tab) {
+    const key = `crm_${tab}_finalizados`;
+    const data = await chrome.storage.local.get(key);
+    return data[key] || [];
+  },
+
+  /**
    * @description Obtiene las notas de un contacto
    * @param {string} phone Número de teléfono del contacto
    * @returns {Promise<string>} Texto de las notas o string vacío

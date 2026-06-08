@@ -40,10 +40,11 @@ export const FloatingMenu = {
     // Secciones
     this.addSection(this.menuElement, 'filtros', '🔍 Filtros CRM', CrmFilters.render);
     this.addSection(this.menuElement, 'contacto', '👤 Contacto', ContactNotes.render);
-    this.addSection(this.menuElement, 'agendar', '📅 Agendar', Scheduler.render);
-    this.addSection(this.menuElement, 'factura', '🧾 Factura', Invoice.render);
-    this.addSection(this.menuElement, 'envio', '📦 Envío', Shipping.render);
+    this.addSection(this.menuElement, 'agendar', '📅 Agendar', (container) => Scheduler.render(container));
+    this.addSection(this.menuElement, 'factura', '🧾 Factura', (container) => Invoice.render(container));
+    this.addSection(this.menuElement, 'envio', '📦 Envío', (container) => Shipping.render(container));
     this.addSection(this.menuElement, 'snippets', '⚡ Snippets Rápidos', this.renderFloatingSnippets.bind(this));
+    this.addSection(this.menuElement, 'reporte', '📝 Reporte CRM', this.renderReportGenerator.bind(this));
 
     container.appendChild(this.menuElement);
     
@@ -83,6 +84,7 @@ export const FloatingMenu = {
     } else {
       header.textContent = 'Abre un chat para comenzar';
     }
+    window.dispatchEvent(new CustomEvent('WA_CRM_CONTACT_CHANGED', { detail: { contact } }));
   },
 
   updateConnectionStatus(isConnected) {
@@ -143,6 +145,64 @@ export const FloatingMenu = {
            const body = snippetsSection.querySelector('.accordion-body');
            this.renderFloatingSnippets(body);
        }
+  },
+
+  renderReportGenerator(container) {
+      container.innerHTML = '';
+      const p = document.createElement('p');
+      p.style.fontSize = '12px';
+      p.style.color = '#666';
+      p.textContent = 'Genera una lista de pendientes para enviar por WhatsApp. Los números se volverán clickeables en el chat.';
+      
+      const btn = document.createElement('button');
+      btn.className = 'primary-btn';
+      btn.textContent = '📋 Generar y Copiar Reporte';
+      btn.style.width = '100%';
+      
+      btn.addEventListener('click', async () => {
+          try {
+              const { StorageAPI } = await import('../shared/storage-api.js');
+              const citas = await StorageAPI.getCrmRecords('citas');
+              const facturas = await StorageAPI.getCrmRecords('facturas');
+              const envios = await StorageAPI.getCrmRecords('envios');
+              
+              let report = '📊 *REPORTE CRM PENDIENTES*\n\n';
+              
+              if (citas.length > 0) {
+                  report += '*Agendamientos:*\n';
+                  citas.forEach(c => { report += `${c.contacto} - ${c.telefono} - Cita\n`; });
+                  report += '\n';
+              }
+              if (facturas.length > 0) {
+                  report += '*Facturas:*\n';
+                  facturas.forEach(c => { report += `${c.contacto} - ${c.telefono} - ${c.estado}\n`; });
+                  report += '\n';
+              }
+              if (envios.length > 0) {
+                  report += '*Envíos:*\n';
+                  envios.forEach(c => { report += `${c.contacto} - ${c.telefono} - ${c.estado}\n`; });
+              }
+              
+              if (citas.length === 0 && facturas.length === 0 && envios.length === 0) {
+                  this.showToast('No hay registros pendientes');
+                  return;
+              }
+              
+              const textArea = document.createElement("textarea");
+              textArea.value = report;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand("copy");
+              document.body.removeChild(textArea);
+              this.showToast('✅ Reporte copiado. ¡Pégalo en un chat!');
+          } catch (e) {
+              this.showToast('Error generando reporte');
+              console.error(e);
+          }
+      });
+      
+      container.appendChild(p);
+      container.appendChild(btn);
   },
   
   showToast(msg) {

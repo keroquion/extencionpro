@@ -8,6 +8,7 @@ export class CrmTab {
     constructor(container) {
         this.container = container;
         this.currentSubTab = 'citas';
+        this.showFinalized = false;
         this.table = null;
         this.records = [];
         this.render();
@@ -18,7 +19,10 @@ export class CrmTab {
             <div class="card">
                 <div class="top-actions">
                     <div id="crm-subtabs"></div>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 14px;">
+                            <input type="checkbox" id="toggle-finalized"> Ver Historial (Finalizados)
+                        </label>
                         <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
                         <button id="btn-import-csv" class="btn secondary">📥 Importar CSV</button>
                         <button id="btn-export-csv" class="btn primary">📤 Exportar CSV</button>
@@ -62,11 +66,22 @@ export class CrmTab {
             }
         });
 
+        const toggleFinalized = this.container.querySelector('#toggle-finalized');
+        toggleFinalized.addEventListener('change', (e) => {
+            this.showFinalized = e.target.checked;
+            this.loadData();
+        });
+
         this.loadData();
     }
 
     async loadData() {
-        this.records = await StorageAPI.getCrmRecords(this.currentSubTab);
+        if (this.showFinalized) {
+            this.records = await StorageAPI.getFinalizedCrmRecords(this.currentSubTab);
+        } else {
+            this.records = await StorageAPI.getCrmRecords(this.currentSubTab);
+        }
+        
         this.table.setData(this.records, (item) => [
             item.contacto,
             item.telefono,
@@ -79,14 +94,18 @@ export class CrmTab {
 
     async handleAction(action, item) {
         if (action === 'Abrir en WA') {
-            chrome.tabs.query({ url: "*://web.whatsapp.com/*" }, (tabs) => {
-               if (tabs.length > 0) {
-                  chrome.tabs.sendMessage(tabs[0].id, { action: 'OPEN_CHAT_IN_WA', phone: item.telefono });
-                  chrome.tabs.update(tabs[0].id, { active: true });
-               } else {
-                  alert("Por favor abre WhatsApp Web primero en otra pestaña.");
-               }
-            });
+            const config = await StorageAPI.getConfig();
+            const method = config.wa_open_method || 'web';
+            const msg = encodeURIComponent(config.wa_prefilled_message || '');
+            const phone = item.telefono.replace(/[^0-9]/g, '');
+            
+            let url = '';
+            if (method === 'app') {
+                url = `https://wa.me/${phone}?text=${msg}`;
+            } else {
+                url = `https://web.whatsapp.com/send/?phone=${phone}&text=${msg}`;
+            }
+            window.open(url, '_blank');
         } else if (action === 'Eliminar') {
             if (confirm(`¿Eliminar registro de ${item.contacto}?`)) {
                 // Remove using the background script to keep it consistent

@@ -115,16 +115,25 @@ async function updateDynamicStyles() {
         if (data.type === 'factura') color = 'rgba(33, 150, 243, 0.4)'; // Azul
         if (data.type === 'envio') color = 'rgba(76, 175, 80, 0.5)'; // Verde Intenso
 
-        // WhatsApp usa un div interno para el color de fondo gris/hover.
-        // Aplicamos el color al contenedor interior para que siempre sea visible.
+        // Usamos un seudoelemento ::after con pointer-events: none
+        // para dibujar el color por ENCIMA sin afectar hover, clicks ni el tamaño de la caja (box-model).
         cssRules += `
             div[role="row"]:has([title*="${escapedName}"]),
             div[role="listitem"]:has([title*="${escapedName}"]) {
-                border-left: 6px solid ${color.replace('0.4', '1').replace('0.5', '1')} !important;
+                position: relative !important;
             }
-            div[role="row"]:has([title*="${escapedName}"]) > div,
-            div[role="listitem"]:has([title*="${escapedName}"]) > div {
+            div[role="row"]:has([title*="${escapedName}"])::after,
+            div[role="listitem"]:has([title*="${escapedName}"])::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
                 background-color: ${color} !important;
+                box-shadow: inset 6px 0 0 0 ${color.replace('0.4', '1').replace('0.5', '1')} !important;
+                pointer-events: none !important;
+                z-index: 10;
             }
         `;
         
@@ -140,12 +149,13 @@ async function updateDynamicStyles() {
         if (currentContactType === 'factura') glowColor = 'rgba(33, 150, 243, 0.6)';
         if (currentContactType === 'envio') glowColor = 'rgba(76, 175, 80, 0.7)';
 
-        // Aplicamos estilos brutales para garantizar visibilidad
+        // Aplicamos outline y un seudoelemento o inset para no afectar el tamaño (el border suma pixeles)
         cssRules += `
             body.wa-crm-active-session #main,
             body.wa-crm-active-session [data-testid="conversation-panel-wrapper"] {
                 box-shadow: inset 0 0 80px 15px ${glowColor} !important;
-                border: 4px solid ${glowColor.replace('0.6', '1').replace('0.7', '1')} !important;
+                outline: 4px solid ${glowColor.replace('0.6', '1').replace('0.7', '1')} !important;
+                outline-offset: -4px !important;
             }
         `;
     }

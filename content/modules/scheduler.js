@@ -1,9 +1,70 @@
 import { CONSTANTS } from '../../shared/constants.js';
+import { StorageAPI } from '../../shared/storage-api.js';
 
 export const Scheduler = {
-  render(parentElement) {
-    parentElement.innerHTML = '';
+  container: null,
+  currentContact: null,
 
+  init() {
+    window.addEventListener('WA_CRM_CONTACT_CHANGED', async (e) => {
+        this.currentContact = e.detail.contact;
+        await this.render();
+    });
+    chrome.storage.onChanged.addListener((changes) => {
+        if (changes['crm_citas']) this.render();
+    });
+  },
+
+  async render(parentElement) {
+    if (parentElement) this.container = parentElement;
+    if (!this.container) return;
+    
+    this.container.innerHTML = '';
+
+    if (!this.currentContact) {
+        this.container.innerHTML = '<p style="font-size:12px; color:#666;">Abre un chat para agendar.</p>';
+        return;
+    }
+
+    const citas = await StorageAPI.getCrmRecords('citas');
+    const record = citas.find(r => r.telefono === this.currentContact.phone);
+
+    if (!record) {
+        this.renderSchedulingUI();
+    } else {
+        const p = document.createElement('p');
+        p.style.fontSize = '13px';
+        p.style.margin = '0 0 10px 0';
+        p.innerHTML = `Estado actual: <strong>${record.estado.toUpperCase()}</strong>`;
+        this.container.appendChild(p);
+
+        const details = document.createElement('div');
+        details.style.padding = '8px';
+        details.style.backgroundColor = '#f9f9f9';
+        details.style.borderLeft = '3px solid #FFC107';
+        details.style.marginBottom = '10px';
+        details.innerHTML = `
+            <strong>Cita Programada:</strong><br/>
+            Fecha/Hora: ${new Date(record.fechaHora).toLocaleString()}<br/>
+            <em>No se puede modificar</em>
+        `;
+        this.container.appendChild(details);
+
+        const btnFinalizar = document.createElement('button');
+        btnFinalizar.textContent = '✅ Contactado (Finalizar)';
+        btnFinalizar.className = 'primary-btn';
+        btnFinalizar.style.backgroundColor = '#4CAF50';
+        btnFinalizar.style.width = '100%';
+        btnFinalizar.addEventListener('click', async () => {
+            await StorageAPI.finalizeCrmRecord('citas', record.id);
+            window.dispatchEvent(new CustomEvent('WA_CRM_SHOW_TOAST', { detail: 'Cita Finalizada' }));
+        });
+        
+        this.container.appendChild(btnFinalizar);
+    }
+  },
+
+  renderSchedulingUI() {
     // Utilidades
     const createButton = (text, onClick, className = 'secondary-btn') => {
       const btn = document.createElement('button');
@@ -74,14 +135,15 @@ export const Scheduler = {
     btnCalendar.style.width = '100%';
     btnCalendar.style.marginTop = '8px';
 
-    parentElement.append(rowToday, rowTomorrow, btnCalendar, calendarRow);
+    this.container.append(rowToday, rowTomorrow, btnCalendar, calendarRow);
   },
 
   saveAppointment(mode, timeValue, dateValue = null) {
-      // STATE is needed here, we'll pass it from the orchestrator
       const event = new CustomEvent('WA_CRM_SAVE_APPOINTMENT', {
           detail: { mode, timeValue, dateValue }
       });
       window.dispatchEvent(event);
   }
 };
+
+Scheduler.init();

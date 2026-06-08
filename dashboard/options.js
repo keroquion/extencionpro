@@ -39,18 +39,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Configuración General
     const configInvoice = document.getElementById('config-invoice');
     const configShipping = document.getElementById('config-shipping');
+    const configWaMethod = document.getElementById('config-wa-method');
+    const configWaMessage = document.getElementById('config-wa-message');
     const btnSaveConfig = document.getElementById('btn-save-config');
 
     // Cargar config
     const config = await StorageAPI.getConfig();
     configInvoice.value = config.invoice_template || 'Factura pendiente de pago...';
     configShipping.value = config.shipping_template || 'Su envío ha sido registrado...';
+    configWaMethod.value = config.wa_open_method || 'web';
+    configWaMessage.value = config.wa_prefilled_message || '';
 
     // Guardar config
     btnSaveConfig.addEventListener('click', async () => {
         const newConfig = {
             invoice_template: configInvoice.value,
-            shipping_template: configShipping.value
+            shipping_template: configShipping.value,
+            wa_open_method: configWaMethod.value,
+            wa_prefilled_message: configWaMessage.value
         };
         await chrome.storage.local.set({ [CONSTANTS.STORAGE_KEYS.CONFIG]: newConfig });
         alert('Configuración guardada correctamente.');

@@ -61,6 +61,18 @@
                 <div class="view-body">
                     <div class="card form-card">
                         <div class="form-group">
+                            <label>Método de Apertura (Botón Abrir en WA):</label>
+                            <select id="config-wa-method" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                                <option value="web">WhatsApp Web (web.whatsapp.com)</option>
+                                <option value="app">WhatsApp Desktop / App (wa.me)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensaje Prellenado (Botón Abrir en WA):</label>
+                            <textarea id="config-wa-message" rows="2" placeholder="Ej: Hola, te contacto por..."></textarea>
+                        </div>
+                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                        <div class="form-group">
                             <label>Plantilla de Factura:</label>
                             <textarea id="config-invoice" rows="3" placeholder="Mensaje que se copiará al portapapeles..."></textarea>
                         </div>
