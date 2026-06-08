@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp CRM - Dashboard</title>
+    <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="icon">⚡</span>
+                <h1>WA CRM</h1>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn active" data-target="snippets-view">
+                    📝 Snippets
+                </button>
+                <button class="nav-btn" data-target="crm-view">
+                    📊 Excel CRM
+                </button>
+                <button class="nav-btn" data-target="settings-view">
+                    ⚙️ Configuración
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            
+            <!-- VIEW: Snippets -->
+            <section id="snippets-view" class="view active">
+                <header class="view-header">
+                    <h2>Gestor de Snippets</h2>
+                    <p>Crea comandos rápidos para expandir textos en WhatsApp.</p>
+                </header>
+                <div class="view-body" id="snippets-container">
+                    <!-- Contenido inyectado por snippets-tab.js -->
+                </div>
+            </section>
+
+            <!-- VIEW: CRM -->
+            <section id="crm-view" class="view hidden">
+                <header class="view-header">
+                    <h2>Excel CRM</h2>
+                    <p>Gestiona tus citas, facturas y envíos.</p>
+                </header>
+                <div class="view-body" id="crm-container">
+                    <!-- Contenido inyectado por crm-tab.js -->
+                </div>
+            </section>
+
+            <!-- VIEW: Settings -->
+            <section id="settings-view" class="view hidden">
+                <header class="view-header">
+                    <h2>Configuración</h2>
+                    <p>Ajustes generales de la extensión.</p>
+                </header>
+                <div class="view-body">
+                    <div class="card form-card">
+                        <div class="form-group">
+                            <label>Plantilla de Factura:</label>
+                            <textarea id="config-invoice" rows="3" placeholder="Mensaje que se copiará al portapapeles..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Plantilla de Envío:</label>
+                            <textarea id="config-shipping" rows="3" placeholder="Mensaje que se copiará al portapapeles..."></textarea>
+                        </div>
+                        <button id="btn-save-config" class="btn primary">Guardar Configuración</button>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- Modulos como tipo module -->
+    <script type="module" src="options.js"></script>
+</body>
+</html>

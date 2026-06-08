@@ -1,0 +1,45 @@
+{
+  "name": "WhatsApp Text Expander + CRM",
+  "description": "Herramienta avanzada de expansión de texto y CRM integrado para WhatsApp Web.",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "storage",
+    "clipboardWrite",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "js": [
+        "content/content-wrapper.js"
+      ],
+      "run_at": "document_idle",
+      "world": "ISOLATED"
+    }
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "options_page": "dashboard/options.html",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "lib/wppconnect-wa.js",
+        "content/*.js",
+        "content/modules/*.js",
+        "shared/*.js",
+        "content/styles/*.css"
+      ],
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ]
+    }
+  ]
+}

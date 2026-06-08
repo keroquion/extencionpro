@@ -1,0 +1,30 @@
+/**
+ * @description Constantes globales de la extensión
+ */
+
+export const CONSTANTS = {
+  PREFIX: 'WA_CRM_',
+  STORAGE_KEYS: {
+    SNIPPETS: 'snippets',
+    CRM_CITAS: 'crm_citas',
+    CRM_FACTURAS: 'crm_facturas',
+    CRM_ENVIOS: 'crm_envios',
+    CONFIG: 'config'
+  },
+  MESSAGES: {
+    CONTACT_UPDATE: 'WA_CRM_CONTACT_UPDATE',
+    STATUS: 'WA_CRM_STATUS',
+    ERROR: 'WA_CRM_ERROR',
+    SEND_TEXT: 'WA_CRM_SEND_TEXT',
+    CRM_ADD_RECORD: 'CRM_ADD_RECORD',
+    CRM_UPDATE_RECORD: 'CRM_UPDATE_RECORD',
+    CRM_DELETE_RECORD: 'CRM_DELETE_RECORD',
+    SAVE_CONTACT_NOTES: 'SAVE_CONTACT_NOTES',
+    GET_CONTACT_NOTES: 'GET_CONTACT_NOTES'
+  },
+  LIMITS: {
+    MAX_FLOATING_SNIPPETS: 4,
+    POLL_INTERVAL_MS: 2000,
+    MAX_WAIT_WPP_MS: 30000
+  }
+};
