@@ -87,10 +87,23 @@ export const Scheduler = {
     
     const inputTimeToday = createInput('time');
     
+    // Función para obtener la hora actual en Perú
+    const getPeruTime = () => {
+         const formatter = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit', hour12: false });
+         const [h, m] = formatter.format(new Date()).split(':');
+         let hour = parseInt(h, 10);
+         if (hour === 24) hour = 0;
+         return { h: hour, m: parseInt(m, 10) };
+    };
+    
+    // Inicializar con la hora actual de Perú
+    const currentPeru = getPeruTime();
+    inputTimeToday.value = `${String(currentPeru.h).padStart(2, '0')}:${String(currentPeru.m).padStart(2, '0')}`;
+
     const setTimeToday = (hoursToAdd) => {
-        const d = new Date();
-        d.setHours(d.getHours() + hoursToAdd);
-        inputTimeToday.value = d.toTimeString().slice(0,5);
+         const p = getPeruTime();
+         const h = (p.h + hoursToAdd) % 24;
+         inputTimeToday.value = `${String(h).padStart(2, '0')}:${String(p.m).padStart(2, '0')}`;
     };
 
     const btnPlus1h = createButton('+1h', () => setTimeToday(1));
@@ -105,16 +118,17 @@ export const Scheduler = {
     const lblManana = document.createElement('label'); lblManana.textContent = 'MAÑANA:';
     
     const inputTimeTomorrow = createInput('time');
+    inputTimeTomorrow.value = '10:00'; // Valor por defecto configurable por el input
     
-    const setTimeTomorrow = (hoursToAdd) => {
-         const d = new Date();
-         d.setDate(d.getDate() + 1);
-         d.setHours(d.getHours() + hoursToAdd);
-         inputTimeTomorrow.value = d.toTimeString().slice(0,5);
+    const setTimeTomorrowRelative = (hoursToAdd) => {
+         let currentVal = inputTimeTomorrow.value || '10:00';
+         let [h, m] = currentVal.split(':').map(Number);
+         h = (h + hoursToAdd + 24) % 24;
+         inputTimeTomorrow.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     };
 
-    const btnMinus1h = createButton('-1h', () => setTimeTomorrow(-1));
-    const btnPlus1hT = createButton('+1h', () => setTimeTomorrow(1));
+    const btnMinus1h = createButton('-1h', () => setTimeTomorrowRelative(-1));
+    const btnPlus1hT = createButton('+1h', () => setTimeTomorrowRelative(1));
     const btnGoTomorrow = createButton('Ir', () => Scheduler.saveAppointment('tomorrow', inputTimeTomorrow.value), 'primary-btn');
     
     rowTomorrow.append(lblManana, btnMinus1h, inputTimeTomorrow, btnPlus1hT, btnGoTomorrow);

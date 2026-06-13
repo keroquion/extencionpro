@@ -1,7 +1,5 @@
 import { StorageAPI } from '../../shared/storage-api.js';
 
-import { StorageAPI } from '../../shared/storage-api.js';
-
 export const CrmFilters = {
     container: null,
 

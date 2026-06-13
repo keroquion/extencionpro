@@ -21,44 +21,61 @@
       let attempts = 0;
       const interval = setInterval(() => {
         attempts++;
-        console.log(`[WA-CRM-BRIDGE] Esperando WPP... Intento ${attempts}. WPP existe:`, !!window.WPP, 'WPP.chat existe:', !!window.WPP?.chat);
         if (window.WPP && window.WPP.chat) {
-          console.log('[WA-CRM-BRIDGE] WPP y WPP.chat detectados! Resolviendo...');
           clearInterval(interval);
           resolve();
         } else if (attempts > 30) {
-           console.log('[WA-CRM-BRIDGE] Timeout: WPP nunca se inicializó después de 30 segundos.');
            clearInterval(interval);
+           resolve();
         }
       }, 1000);
     });
   }
 
   function startEventListening() {
-    console.log('[WA-CRM-BRIDGE] startEventListening iniciado. WPP isReady:', window.WPP?.isReady);
     emitStatus('CONNECTED');
     
     setInterval(() => {
         try {
-            let activeChat = window.WPP?.chat?.getActiveChat();
-            if (!activeChat) activeChat = window.WPP?.whatsapp?.Chat?.getActive?.();
-            if (!activeChat) activeChat = window.WPP?.whatsapp?.ChatStore?.getActive?.();
+            if (!window.WPP || !window.WPP.chat) return;
+            
+            let activeChat = null;
+            try { activeChat = window.WPP.chat?.getActiveChat(); } catch(e) {}
+            
             if (!activeChat) {
-                const chats = window.WPP?.whatsapp?.ChatStore?.getModelsArray?.() || [];
-                activeChat = chats.find(c => c.active || c.isOpened);
+                try { activeChat = window.WPP.whatsapp?.Chat?.getActive?.(); } catch(e) {}
             }
+            if (!activeChat) {
+                try { activeChat = window.WPP.whatsapp?.ChatStore?.getActive?.(); } catch(e) {}
+            }
+            if (!activeChat) {
+                try {
+                    const chats = window.WPP.whatsapp?.ChatStore?.getModelsArray?.() || [];
+                    activeChat = chats.find(c => c.active || c.isOpened);
+                } catch(e) {}
+            }
+            
             if (activeChat) {
                 processChat(activeChat);
-            } else {
-                console.log('[WA-CRM-BRIDGE] activeChat es nulo en el polling.');
             }
         } catch(e) {
-            console.error('[WA-CRM-BRIDGE] Error en polling:', e);
+            // Silenciamos el error para no hacer spam en la consola
         }
     }, 1000);
 
     window.WPP?.on?.('chat.active_chat', (chat) => {
       if(chat) processChat(chat);
+    });
+
+    window.WPP?.on?.('chat.new_message', (msg) => {
+      if (!msg.id.fromMe) {
+          let phoneRaw = msg.from || msg.author || '';
+          let cleanPhone = typeof phoneRaw === 'string' ? phoneRaw.replace('@c.us', '').replace('@g.us', '').replace('@lid', '') : '';
+          if (cleanPhone) {
+              console.log('[WA-CRM-BRIDGE] Mensaje recibido de:', cleanPhone);
+              emit(CONSTANTS.PREFIX + 'NEW_MESSAGE', { phone: cleanPhone });
+          }
+      }
     });
 
     window.addEventListener('message', (event) => {
@@ -80,13 +97,27 @@
 
   function processChat(chat) {
     try {
-      const name = chat.formattedTitle || chat.name || chat.__x_formattedTitle || 'SinNombre';
-      const phoneRaw = chat.historyChatId || chat.id?.user || chat.__x_id?.user || chat.id?._serialized || 'SinTelefono';
+      let name = chat.formattedTitle || chat.name || chat.__x_formattedTitle || 'SinNombre';
+      let isGroup = chat.isGroup || chat.__x_isGroup || false;
+      let phoneRaw = chat.id?.user || chat.__x_id?.user || chat.id?._serialized || chat.historyChatId || 'SinTelefono';
       
+      let cleanPhone = typeof phoneRaw === 'string' ? phoneRaw.replace('@c.us', '').replace('@g.us', '').replace('@lid', '') : 'Desconocido';
+      
+      // Si el "nombre" es solo un número telefónico (+51 956...), significa que no está agendado
+      if (/^\+?[\d\s\-]+$/.test(name)) {
+          cleanPhone = name; // Guardar el número tal cual, ej: "+51 956..."
+          name = "Sin Nombre";
+      } else if (isGroup) {
+          cleanPhone = "Grupo";
+          // Si el usuario pidió que el nombre del grupo también sea "Sin Nombre", lo ponemos:
+          // pero típicamente los grupos tienen nombre. Si pidió estrictamente "o es grupo = sin nombre":
+          name = "Sin Nombre"; 
+      }
+
       const contact = {
         name: name,
-        phone: typeof phoneRaw === 'string' ? phoneRaw.replace('@c.us', '').replace('@lid', '') : 'Desconocido',
-        isGroup: chat.isGroup || chat.__x_isGroup || false,
+        phone: cleanPhone,
+        isGroup: isGroup,
         timestamp: Date.now()
       };
 

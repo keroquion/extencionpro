@@ -1,0 +1,32 @@
+=========================================================
+      MANUAL DE USO: SERVIDOR SMS & EMAIL MASIVO
+=========================================================
+
+1. ¿CÓMO LLEVAR ESTE PROGRAMA A OTRA COMPUTADORA (PORTABILIDAD)?
+---------------------------------------------------------
+Para que "ServidorSMS.exe" pueda enviar mensajes desde cualquier PC o Laptop sin tener que instalar absolutamente nada (ni Android Studio, ni NodeJS), debes llevarte siempre estos 4 archivos juntos en la misma carpeta o memoria USB:
+
+1. ServidorSMS.exe
+2. adb.exe
+3. AdbWinApi.dll
+4. AdbWinUsbApi.dll
+
+Mientras el ServidorSMS.exe tenga a esos 3 archivos de ADB a su lado, podrá comunicarse mágicamente con tu teléfono Android por USB.
+
+
+2. GUÍA PARA ACTIVAR EMAILS MASIVOS CON GMAIL
+---------------------------------------------------------
+Si intentas poner tu contraseña normal de Gmail en la extensión, te saldrá el error "Application-specific password required" por seguridad. Debes usar una Contraseña de Aplicación. Sigue estos pasos:
+
+Paso 1: Ve a la configuración de tu cuenta de Google (Seguridad):
+https://myaccount.google.com/security
+
+Paso 2: Busca y activa la "Verificación en 2 pasos" (te pedirá tu número de teléfono).
+
+Paso 3: Una vez activada, busca en esa misma pantalla de Seguridad la opción que dice "Contraseñas de aplicación" (App Passwords).
+
+Paso 4: Entra ahí y ponle un nombre, por ejemplo: "Extension WA CRM", y dale a Crear.
+
+Paso 5: Google te generará una clave de 16 letras. Esa es la clave que debes pegar en tu extensión en lugar de tu contraseña normal. 
+
+Nota: Si vas a usar un correo corporativo, no necesitas hacer esto; simplemente elige "Corporativo" en la extensión y pon tu clave normal y los puertos de tu hosting.

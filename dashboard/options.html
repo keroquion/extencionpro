@@ -24,6 +24,12 @@
                 <button class="nav-btn" data-target="settings-view">
                     ⚙️ Configuración
                 </button>
+                <button class="nav-btn" data-target="sms-view">
+                    📱 SMS Masivo (ADB)
+                </button>
+                <button class="nav-btn" data-target="email-view">
+                    📧 Email Masivo
+                </button>
             </nav>
         </aside>
 
@@ -49,6 +55,168 @@
                 </header>
                 <div class="view-body" id="crm-container">
                     <!-- Contenido inyectado por crm-tab.js -->
+                </div>
+            </section>
+
+            <!-- VIEW: SMS -->
+            <section id="sms-view" class="view hidden">
+                <header class="view-header">
+                    <h2>SMS Masivo (ADB)</h2>
+                    <p>Envío automatizado de SMS mediante servidor EXE local.</p>
+                    <div id="adbStatusBadge" style="margin-top: 10px; display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e2e8f0; color: #64748b;">Verificando Servidor...</div>
+                </header>
+                <div class="view-body" id="sms-container">
+                    <div class="card form-card">
+                        <h3>Configuración del Mensaje</h3>
+                        <div class="form-group">
+                            <label>Mensaje SMS:</label>
+                            <textarea id="smsMessage" rows="4" placeholder="Escribe tu mensaje aquí..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Lista de Números (Separados por salto o coma):</label>
+                            <textarea id="smsNumbers" rows="6" placeholder="+51999888777\n+51999888666..."></textarea>
+                            <small>Se ignorarán automáticamente los números que ya estén en el historial.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Lista Blanca (Ignoran el historial, separados por comas):</label>
+                            <input type="text" id="smsWhitelist" placeholder="+51... , +51..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                        </div>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 15px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Intervalo (seg):</label>
+                                <input type="number" id="smsDelay" value="10" min="1" max="60" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label>Coordenadas (X, Y):</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" id="smsCoordX" value="965" placeholder="X" style="width: 50%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                                    <input type="number" id="smsCoordY" value="2240" placeholder="Y" style="width: 50%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                                </div>
+                            </div>
+                        </div>
+                        <button id="smsSendBtn" class="btn primary" style="width: 100%;">Iniciar Envío</button>
+                    </div>
+
+                    <div class="card form-card" style="border: 2px dashed #3b82f6; background: rgba(59, 130, 246, 0.05); margin-top: 20px;">
+                        <h3>Modo de Prueba (Bucle Infinito)</h3>
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="form-group" style="flex: 2;">
+                                <label>Número a testear:</label>
+                                <input type="text" id="smsLoopNumber" placeholder="+51999999999" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Intervalo (seg):</label>
+                                <input type="number" id="smsLoopDelay" value="1" min="1" max="60" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button id="smsStartLoopBtn" class="btn" style="flex: 1; background: #10b981; color: white;">▶ Iniciar Bucle</button>
+                            <button id="smsStopLoopBtn" class="btn" style="flex: 1; background: #ef4444; color: white; display: none;">⏹ Detener Bucle</button>
+                        </div>
+                    </div>
+
+                    <div class="card form-card" style="margin-top: 20px;">
+                        <h3>Estado en Tiempo Real</h3>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="flex: 1; text-align: center; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                                <span id="smsQueueCount" style="font-size: 24px; font-weight: bold;">0</span>
+                                <br><span>En Cola</span>
+                            </div>
+                            <div style="flex: 1; text-align: center; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                                <span id="smsHistoryCount" style="font-size: 24px; font-weight: bold;">0</span>
+                                <br><span>Historial (Enviados)</span>
+                            </div>
+                        </div>
+                        <div id="smsLogContainer" style="background: #1e293b; color: #33ff33; padding: 1rem; border-radius: 8px; height: 150px; overflow-y: auto; font-family: monospace; font-size: 13px;">
+                            <!-- Logs -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: EMAIL -->
+            <section id="email-view" class="view hidden">
+                <header class="view-header">
+                    <h2>Email Masivo (Publicidad)</h2>
+                    <p>Envío automatizado de correos con diseños profesionales (HTML).</p>
+                    <div id="emailStatusBadge" style="margin-top: 10px; display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e2e8f0; color: #64748b;">Verificando Servidor...</div>
+                </header>
+                <div class="view-body" id="email-container">
+                    
+                    <div class="card form-card">
+                        <h3>1. Configuración de Cuenta Remitente</h3>
+                        <div class="form-group">
+                            <label>Proveedor de Correo:</label>
+                            <select id="emailProvider" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                                <option value="gmail">Gmail (Requiere Contraseña de Aplicación)</option>
+                                <option value="custom">Corporativo / Personalizado (SMTP)</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; margin-bottom: 15px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Tu Correo Electrónico:</label>
+                                <input type="email" id="emailUser" placeholder="ejemplo@gmail.com" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Contraseña (App Password):</label>
+                                <input type="password" id="emailPass" placeholder="••••••••" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+
+                        <div id="customSmtpFields" style="display: none; gap: 1rem; margin-bottom: 15px;">
+                            <div class="form-group" style="flex: 2;">
+                                <label>Servidor SMTP (Ej. smtp.hostinger.com):</label>
+                                <input type="text" id="emailHost" placeholder="smtp.tudominio.com" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Puerto (Ej. 465 o 587):</label>
+                                <input type="number" id="emailPort" value="465" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        
+                        <button id="emailVerifyBtn" class="btn" style="background: #3b82f6; color: white;">Probar Conexión</button>
+                    </div>
+
+                    <div class="card form-card" style="margin-top: 20px;">
+                        <h3>2. Configuración de la Campaña</h3>
+                        
+                        <div class="form-group">
+                            <label>Lista de Destinatarios (Correos separados por coma o salto de línea):</label>
+                            <textarea id="emailList" rows="3" placeholder="cliente1@gmail.com, cliente2@hotmail.com..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Asunto del Correo:</label>
+                            <input type="text" id="emailSubject" placeholder="¡Gran Promoción de Verano!" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Diseño del Mensaje (Código HTML y CSS):</label>
+                            <textarea id="emailBody" rows="12" style="font-family: monospace; font-size: 13px; background: #f8f9fa;"></textarea>
+                        </div>
+
+                        <div class="form-group" style="width: 50%;">
+                            <label>Intervalo de envío (segundos):</label>
+                            <input type="number" id="emailDelay" value="15" min="1" max="120" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #ddd;">
+                            <small>Sugerido: 15-30s para no caer en SPAM.</small>
+                        </div>
+
+                        <button id="emailSendBtn" class="btn primary" style="width: 100%; margin-top: 10px;">Iniciar Campaña de Correos</button>
+                    </div>
+
+                    <div class="card form-card" style="margin-top: 20px;">
+                        <h3>Estado de Envíos</h3>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="flex: 1; text-align: center; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                                <span id="emailQueueCount" style="font-size: 24px; font-weight: bold; color: #3b82f6;">0</span>
+                                <br><span>Correos en Cola</span>
+                            </div>
+                        </div>
+                        <div id="emailLogContainer" style="background: #1e293b; color: #3b82f6; padding: 1rem; border-radius: 8px; height: 150px; overflow-y: auto; font-family: monospace; font-size: 13px;">
+                            <!-- Logs -->
+                        </div>
+                    </div>
                 </div>
             </section>
 

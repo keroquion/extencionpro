@@ -5,16 +5,17 @@
   "manifest_version": 3,
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "clipboardWrite",
     "activeTab"
   ],
   "host_permissions": [
-    "https://web.whatsapp.com/*"
+    "<all_urls>"
   ],
   "content_scripts": [
     {
       "matches": [
-        "https://web.whatsapp.com/*"
+        "<all_urls>"
       ],
       "js": [
         "content/content-wrapper.js"
@@ -23,6 +24,10 @@
       "world": "ISOLATED"
     }
   ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Opciones Rápidas"
+  },
   "background": {
     "service_worker": "background/service-worker.js",
     "type": "module"
@@ -38,7 +43,7 @@
         "content/styles/*.css"
       ],
       "matches": [
-        "https://web.whatsapp.com/*"
+        "<all_urls>"
       ]
     }
   ]

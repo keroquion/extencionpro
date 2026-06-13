@@ -1,5 +1,7 @@
 import { SnippetsTab } from './tabs/snippets-tab.js';
 import { CrmTab } from './tabs/crm-tab.js';
+import { initSmsTab } from './tabs/sms-tab.js';
+import { initEmailTab } from './tabs/email-tab.js';
 import { StorageAPI } from '../shared/storage-api.js';
 import { CONSTANTS } from '../shared/constants.js';
 
@@ -11,6 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     new SnippetsTab(snippetsContainer);
     new CrmTab(crmContainer);
+    initSmsTab();
+    initEmailTab();
 
     // Navegación del Sidebar
     const navButtons = document.querySelectorAll('.nav-btn');
