@@ -66,4 +66,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert('Configuración guardada correctamente.');
     });
 
+    // Respaldos (Exportar/Importar)
+    const btnExportData = document.getElementById('btn-export-data');
+    const inputImportData = document.getElementById('input-import-data');
+
+    if (btnExportData) {
+        btnExportData.addEventListener('click', async () => {
+            const allData = await chrome.storage.local.get(null);
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `wacrm_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        });
+    }
+
+    if (inputImportData) {
+        inputImportData.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (confirm('⚠️ ATENCIÓN: Esto reemplazará TODOS tus datos actuales (snippets, clientes, historiales, colores). ¿Estás seguro de que quieres continuar?')) {
+                        await chrome.storage.local.clear();
+                        await chrome.storage.local.set(importedData);
+                        alert('¡Copia de seguridad restaurada con éxito! La página se recargará ahora.');
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    alert('El archivo no es válido o está corrupto.');
+                    console.error('Error importando backup:', error);
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
 });

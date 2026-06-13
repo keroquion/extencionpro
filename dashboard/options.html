@@ -249,6 +249,15 @@
                             <textarea id="config-shipping" rows="3" placeholder="Mensaje que se copiará al portapapeles..."></textarea>
                         </div>
                         <button id="btn-save-config" class="btn primary">Guardar Configuración</button>
+                        
+                        <hr style="margin: 25px 0; border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h3>Respaldos de Datos (Backup)</h3>
+                        <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">Exporta todos tus snippets, clientes, agendamientos y configuración a un archivo para usarlo en otra PC.</p>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="btn-export-data" class="btn primary" style="background-color: #10b981; flex: 1;">📥 Exportar Copia de Seguridad</button>
+                            <label for="input-import-data" class="btn secondary" style="cursor: pointer; text-align: center; flex: 1;">📤 Importar Copia</label>
+                            <input type="file" id="input-import-data" accept=".json" style="display: none;">
+                        </div>
                     </div>
                 </div>
             </section>
